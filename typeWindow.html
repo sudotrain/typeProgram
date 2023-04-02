@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .correct {
+        background-color: yellow;
+      }
+      .incorrect {
+        background-color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Welcome to Type Test</h1>
+
+    <small style="display: hidden"
+      >The number of characters in a one-minute typing test can vary based on
+      the language, typing speed, and the type of text being typed. As a rough
+      estimate, a typing speed of around 40 words per minute (WPM) would require
+      typing around 200-250 characters in one minute. However, this can vary
+      widely depending on the factors mentioned above. For example, a person
+      typing in a language with complex characters or a person typing a
+      technical document with many long words may have a lower WPM and therefore
+      require typing fewer characters in one minute.
+    </small>
+
+    <div>Accuracy: <span id="accuracy">0</span>%</div>
+    <div>Time: <span id="timer">0</span></div>
+    <div style="display: none">Time: <span id="time">0</span></div>
+    <div>Speed: <span id="speed">0</span> CPM</div>
+
+    <div oncontextmenu="return false;">
+      <p><label for="question">Given Text:</label></p>
+      <pre
+        id="question"
+        style="height: 100px; background-color: aqua; font-size: 25px; letter-spacing: 1px; word-spacing: 2px;"
+      >Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique repudiandae aut laboriosam provident dolore vel quidem rem corporis! Eum, explicabo odit quae sit facere dolorem minima vitae consequuntur quis sed?
+      </pre>
+    </div>
+    <br />
+
+    <div>
+      <p><label for="answer">Answer Text:</label></p>
+      <textarea
+        name="answer"
+        id="answer"
+        style="width: 100%; height: 100px"
+      ></textarea>
+    </div>
+
+    <p>Thank you for attending the test</p>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function () {
+        // $.ajax({
+        //   url: "backend/question",
+        //   type: "GET",
+        //   success: function (data) {
+        //     var question = JSON.parse(data.question);
+        //     $("#question").text(question.text);
+        //   },
+        //   error: function () {
+        //     // $("#question").text("Error fetching question data.");
+        //     // swal fire
+        //   },
+        // });
+
+     
+        $("body").bind("copy paste", function (e) {
+          e.preventDefault();
+          return false;
+        });
+
+        // var value = $("#question").text().trim();
+        // var chars = value.split("");
+
+        var value = $("#question").text().trim();
+        var chars = value.split(/(?=.)/);
+
+        $("#answer").on("input", function () {
+          var dInput = this.value;
+          var dChars = dInput.split("");
+          var correct = 0;
+          var incorrect = 0;
+
+          var correctChars = chars.map(function (c, i) {
+            var matchClass = "";
+            if (dChars[i] == c) {
+              matchClass = "correct";
+              correct++;
+            } else if (dChars[i] != undefined) {
+              matchClass = "incorrect";
+              incorrect++;
+            }
+            return '<span class="' + matchClass + '">' + c + "</span>";
+          });
+
+          $("#question").html(correctChars.join(""));
+
+          var accuracy = Math.round((correct / (correct + incorrect)) * 100);
+          var time = $("#time").text();
+          var speed = Math.round((correct / time) * 60);
+
+          $("#accuracy").text(accuracy);
+          $("#speed").text(speed);
+        });
+
+        var time = 0;
+        setInterval(function () {
+          time++;
+          $("#time").text(time);
+        }, 1000);
+
+        function disableAndSendData() {
+          $("#answer").prop("disabled", true);
+          clearInterval(interval);
+        }
+
+        var timer2 = "1:01";
+        var interval = setInterval(function () {
+          var timer = timer2.split(":");
+          //by parsing integer, I avoid all extra string processing
+          var minutes = parseInt(timer[0], 10);
+          var seconds = parseInt(timer[1], 10);
+          --seconds;
+          if (seconds < 0) {
+            --minutes;
+            seconds = 59;
+          }
+          if (minutes <= 0 && seconds <= 0) {
+            disableAndSendData();
+            minutes = 0;
+            seconds = 0;
+          }
+          seconds = seconds < 10 ? "0" + seconds : seconds;
+          minutes = minutes < 10 ? "0" + minutes : minutes;
+          $("#timer").html(minutes + " minutes : " + seconds + " seconds");
+          timer2 = minutes + ":" + seconds;
+        }, 1000);
+      });
+    </script>
+  </body>
+</html>
